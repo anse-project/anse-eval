@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Model Already Knows the Best Noise</title>
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro" rel="stylesheet">
+  <style>
+    /* Global styles for high readability and a clean look */
+    body {
+      font-family: 'Google Sans', sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      padding: 0;
+      background-color: #fff;
+      color: #333;
+    }
+
+    .container {
+      width: 90%;
+      max-width: 1500px;
+      margin: 40px auto;
+      padding: 20px;
+      background-color: #fff;
+      /* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); */
+    }
+
+    .header {
+      padding: 0;
+      margin-bottom: 20px;
+      background: none;
+      box-shadow: none;
+      text-align: center;
+    }
+
+    h1,
+    h3 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    p {
+      margin: 15px 0;
+    }
+
+    .authors {
+      text-align: center;
+      font-style: italic;
+      margin-bottom: 40px;
+    }
+
+    .section {
+      text-align: center;
+      margin-bottom: 3em;
+      padding: 0.5em;
+      background-color: #ffffff;
+      border-radius: 1em;
+      box-shadow: 0 0 1em 0em rgba(0, 0, 0, 0.1);
+    }
+
+    .section-title {
+      font-size: 32px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-gap: 0.4em;
+      margin-top: 2em;
+    }
+
+    .video-item p {
+      display: block;
+      margin-bottom: 0.5em;
+      font-weight: bold;
+      font-size: 1.2em;
+    }
+
+    video {
+      width: 100%;
+      height: auto;
+      border-radius: 0.5em;
+      box-shadow: 0 0 1em 0em rgba(0, 0, 0, 0.15);
+    }
+
+    .vid-des {
+      font-size: larger;
+    }
+
+    .highlight {
+      background-color: #333;
+      color: #fff;
+      padding: 0.2em 0.5em;
+      border-radius: 0.5em;
+    }
+
+    .video-label {
+      width: 200px;
+      /* Fixed width for all labels */
+      text-align: right;
+      /* Right-align the text */
+      font-size: 24px;
+      font-weight: bold;
+      margin-right: 1em;
+    }
+
+    mark {
+      background-color: #f0e68c;
+      /* A softer, pale yellow */
+      color: #333;
+      /* Dark gray for good contrast */
+      padding: 2px 5px;
+      /* Add padding for breathing room */
+      border-radius: 3px;
+      /* Slightly rounded corners */
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+      /* Subtle shadow */
+      padding: 2px 5px;
+      /* 2px top and bottom, 5px left and right */
+    }
+
+    .publication-authors {
+      font-family: 'Google Sans', sans-serif;
+    }
+
+    .author-block {
+      font-size: 19px;
+      color: black;
+      padding: 0 5px;
+      display: inline-block;
+      font-weight: 500;
+    }
+
+    .title-highlight {
+      background: linear-gradient(45deg, #1e90ff, #ff1493);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: bold;
+      /* Optional: add a subtle text shadow for extra depth */
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+    }
+
+    .bansa-highlight {
+      background: linear-gradient(45deg, #ddf812, #f612d4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: bold;
+      /* Optional: add a subtle text shadow for extra depth */
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <!-- Header without extra padding or border -->
+    <div class="header">
+      <h1>
+        Human Evaluation Test (First of all, Sincerely thanks for your time and efforts.) <br>
+      </h1>
+      <br>
+
+      <!-- <div class="publication-authors">
+        <span class="author-block"><a style="color: inherit; text-decoration: none">Anonymous Authors</a></span>&emsp;
+        <br>
+        <span class="author-block"
+          style="padding-top: 5px;">&emsp;&emsp;&emsp;&emsp;Affiliation</span>&emsp;&emsp;&emsp;&emsp;
+        <br>
+      </div> -->
+
+      <br>
+      <!-- <div class="publication-authors">
+        <a href="https://arxiv.org/abs/2503.09151" target="_blank" style="text-decoration: none;">
+          <button style="background-color: rgba(40, 41, 41, 0.65); color: white; border: 2px solid white; padding: 10px 20px; font-size: 18px; border-radius: 7px; cursor: pointer;">
+            Arxiv
+          </button>
+        </a>
+        &emsp;&emsp;&emsp;
+        <a href="https://github.com/HyeonHo99/Reangle-Video" target="_blank" style="text-decoration: none;">
+          <button style="background-color: rgba(40, 41, 41, 0.65); color: white; border: 2px solid white; padding: 10px 20px; font-size: 18px; border-radius: 7px; cursor: pointer;">
+            Code 
+          </button>
+        </a>
+      </div> -->
+    </div>
+
+    <p style="text-align: center; font-size: 20px; margin-bottom: 2em; color: #555;">
+      <em>Press Enter to pause or resume all videos.</em>
+    </p>
+
+    <!-- TL;DR section -->
+    <div class="section" id="tldr">
+      <div class="section-title">Evaluation Guideline</div>
+      <p style="width: 70%; text-align: center; font-size: 18px; margin: 0 auto;">
+        Among two videos, Please choose the better video with respect to (1) Text Alignment (2) Overall Visual Quality
+      </p>
+      <br><br>
+
+
+      <br><br><br>
+
+      <!-- cogvideo-2b -->
+      <div class="section" id="cogvideo-2b">
+        <div class="section-title">Comparison on CogVideoX-2B</div>
+        <p style="width: 70%; text-align: center; font-size: 18px; margin: 0 auto;">
+          For Comparison, we definitely use same prompts and model for video generation.
+        </p>
+        <br><br>
+
+        <!-- Video grid for static view transport -->
+        <div class="video-grid" style="width: 90%; margin: 0 auto; grid-template-columns: repeat(2, 1fr);">
+          <!-- First row -->
+          <div class="video-item">
+            <div class="vid-des">(A)</div>
+            <video muted autoplay loop style="width: 90%">
+              <source src="videos/baseline/2b/ballon-0.mp4" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+          </div>
+          <div class="video-item">
+            <div class="vid-des">(B)</div>
+            <video muted autoplay loop style="width: 90%">
+              <source src="videos/ours/2b/ballon-1.mp4" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+          </div>
+        </div>
+        <p style="font-size: 18px;">
+          <b>Text Prompt:</b> "A <b>vibrant, water-filled balloon hangs suspended in mid-air against a dark
+            backdrop</b>,
+          its surface glistening under the spotlight. <b>Suddenly, a pin pierces the balloon, and in extreme slow
+            motion,
+            the rubber bursts apart, creating a mesmerizing cascade of water droplets.</b> The liquid forms intricate,
+          fleeting shapes, each droplet catching the light and sparkling like tiny diamonds. The balloon's remnants peel
+          away, revealing the water's graceful dance as it disperses into the air.
+          The entire scene unfolds with breathtaking clarity, <b>capturing the beauty and chaos of the explosion in
+            exquisite detail.</b>"
+        </p>
+
+        <!-- Second row -->
+        <div class="video-grid" style="width: 90%; margin: 0 auto; grid-template-columns: repeat(2, 1fr);">
+          <div class="video-item">
+            <div class="vid-des">(A)</div>
+            <video muted autoplay loop style="width: 90%">
+              <source src="videos/ours/2b/couple-1.mp4" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+          </div>
+          <div class="video-item">
+            <div class="vid-des">(B)</div>
+            <video muted autoplay loop style="width: 90%">
+              <source src="videos/baseline/2b/couple-0.mp4" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+          </div>
+        </div>
+        <p style="font-size: 18px;">
+          <b>Text Prompt:</b> " <b>A sophisticated couple, dressed in elegant evening attire, walks down a dimly lit
+            street, their formal wear glistening under the streetlights.</b> <b>The man, in a tailored black tuxedo, and
+            the woman, in a flowing red gown, share a black umbrella as the rain begins to pour heavily.</b> The camera
+          captures their synchronized steps and the smooth, steady movement of their journey. Raindrops bounce off their
+          umbrella, creating a rhythmic pattern. The couple's expressions shift from surprise to laughter as they
+          embrace
+          the unexpected downpour.
+          Their polished shoes splash through puddles, and the streetlights cast a warm glow on the wet pavement,
+          enhancing the romantic ambiance of their shared moment."
+        </p>
+
+        <!-- Video grid for static view transport -->
+        <div class="video-grid" style="width: 90%; margin: 0 auto; grid-template-columns: repeat(2, 1fr);">
+          <!-- First row -->
+          <div class="video-item">
+            <div class="vid-des">(A)</div>
+            <video muted autoplay loop style="width: 90%">
+              <source src="videos/ours/5b/cogi-1.mp4" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+          </div>
+          <div class="video-item">
+            <div class="vid-des">(B)</div>
+            <video muted autoplay loop style="width: 90%">
+              <source src="videos/baseline/5b/cogi-0.mp4" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+          </div>
+        </div>
+        <p style="font-size: 18px;">
+          <b>Text Prompt:</b> " <b>A joyful Corgi with a fluffy coat and perky ears frolics in a sunlit park</b>, the
+          golden hues of sunset casting a warm glow on the scene. <b>The camera zooms in on the Corgi's expressive face,
+            capturing its bright eyes and wide</b>, happy grin"
+        </p>
+
+        <!-- Third row -->
+        <div class="video-grid" style="width: 90%; margin: 0 auto; grid-template-columns: repeat(2, 1fr);">
+          <div class="video-item">
+            <div class="vid-des">(A)</div>
+            <video muted autoplay loop style="width: 90%">
+              <source src="videos/ours/2b/drone-1.mp4" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+          </div>
+          <div class="video-item">
+            <div class="vid-des">(B)</div>
+            <video muted autoplay loop style="width: 90%">
+              <source src="videos/baseline/2b/drone-0.mp4" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+          </div>
+        </div>
+        <p style="font-size: 18px;">
+          <b>Text Prompt:</b> " <b>A drone captures a breathtaking aerial view of a festive celebration in a
+            snow-covered
+            town square, centered around a towering, brilliantly lit Christmas tree adorned with twinkling lights and
+            ornaments.</b> The scene is alive with vibrant fireworks bursting in the sky, casting colorful reflections
+          on
+          the snow below. The starry night sky serves as a magical backdrop, enhancing the festive atmosphere. Below,
+          people in warm winter attire gather, their faces illuminated by the glow of the tree and fireworks, creating a
+          heartwarming sense of community and joy.
+          The drone's perspective showcases the entire scene, from the sparkling tree to the dazzling fireworks and the
+          serene, star-filled sky above."
+        </p>
+        <br>
+        <!-- 4th row -->
+        <div class="video-grid" style="width: 90%; margin: 0 auto; grid-template-columns: repeat(2, 1fr);">
+          <div class="video-item">
+            <div class="vid-des">(A)</div>
+            <video muted autoplay loop style="width: 90%">
+              <source src="videos/ours/2b/polar-1.mp4" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+          </div>
+          <div class="video-item">
+            <div class="vid-des">(B)</div>
+            <video muted autoplay loop style="width: 90%">
+              <source src="videos/baseline/2b/polar-0.mp4" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+          </div>
+        </div>
+        <p style="font-size: 18px;">
+          <b>Text Prompt:</b> "<b>A majestic polar bear, standing on its hind legs, strums an electric guitar with
+            surprising dexterity, set against a backdrop of the Arctic tundra.</b> The bear's white fur contrasts
+          sharply
+          with the vibrant red of the guitar, creating a striking visual. Snowflakes gently fall around, adding a
+          magical
+          touch to the scene. as its large paws expertly navigate the strings. In the background, the Northern Lights
+          dance across the sky, casting an ethereal glow over the icy landscape. The scene captures a whimsical blend of
+          nature and fantasy, where the wild meets the world of music."
+        </p>
+        <br>
+
+        <!-- 5th row -->
+        <div class="video-grid" style="width: 90%; margin: 0 auto; grid-template-columns: repeat(2, 1fr);">
+          <div class="video-item">
+            <div class="vid-des">(A)</div>
+            <video muted autoplay loop style="width: 90%">
+              <source src="videos/ours/2b/teddy-1.mp4" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+          </div>
+          <div class="video-item">
+            <div class="vid-des">(B)</div>
+            <video muted autoplay loop style="width: 90%">
+              <source src="videos/baseline/2b/teddy-0.mp4" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+          </div>
+        </div>
+        <p style="font-size: 18px;">
+          <b>Text Prompt:</b> <b> "A plush teddy bear, with soft brown fur and a red bow tie, stands on a stool in a
+            cozy,
+            vintage kitchen.</b> <b>The bear's tiny paws are submerged in a sink filled with soapy water, bubbles
+            floating
+            around. </b> The kitchen is warmly lit, with checkered curtains and wooden cabinets. The bear carefully
+          scrubs
+          a plate, its expression one of focused determination. Nearby, a drying rack holds a few clean dishes, and a
+          small radio plays a cheerful tune.
+          The scene captures a whimsical moment of domesticity, with the teddy bear embodying a sense of playful
+          responsibility."
+        </p>
+        <br>
+
+        <!-- 6th row -->
+        <div class="video-grid" style="width: 90%; margin: 0 auto; grid-template-columns: repeat(2, 1fr);">
+          <div class="video-item">
+            <div class="vid-des">(A)</div>
+            <video muted autoplay loop style="width: 90%">
+              <source src="videos/ours/2b/panda-1.mp4" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+          </div>
+          <div class="video-item">
+            <div class="vid-des">(B)</div>
+            <video muted autoplay loop style="width: 90%">
+              <source src="videos/baseline/2b/panda-0.mp4" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+          </div>
+        </div>
+        <p style="font-size: 18px;">
+          <b>Text Prompt:</b> <b>"In a charming Parisian café, an animated panda sits at a quaint wooden table, sipping
+            coffee from a delicate porcelain cup. The panda, wearing a stylish beret and a striped scarf, gazes out the
+            window at the bustling Paris streets, where the Eiffel Tower looms in the distance. </b>The café's interior
+          is
+          adorned with vintage posters and warm, ambient lighting, creating a cozy atmosphere. The panda's expressive
+          eyes
+          reflect contentment as it enjoys the rich aroma of the coffee. Outside, the cobblestone streets and
+          flower-adorned balconies add to the enchanting Parisian scene, making the moment feel both whimsical and
+          serene."
+        </p>
+        <br>
+
+        <br>
+      </div>
+      <br><br><br>
+
+
+      <!-- cogvideo-5b -->
+      <div class="section" id="cogvideo-5b">
+        <div class="section-title">Comparison on CogVideoX-5B</div>
+        <p style="width: 70%; text-align: center; font-size: 18px; margin: 0 auto;">
+          For Comparison, we definitely use same prompts and model for video generation.
+        </p>
+        <br><br>
+
+
+        <!-- Second row -->
+        <div class="video-grid" style="width: 90%; margin: 0 auto; grid-template-columns: repeat(2, 1fr);">
+          <div class="video-item">
+            <div class="vid-des">(A)</div>
+            <video muted autoplay loop style="width: 90%">
+              <source src="videos/ours/5b/bear-1.mp4" type="video/mp4">
+
+              Your browser does not support the video tag.
+            </video>
+          </div>
+          <div class="video-item">
+            <div class="vid-des">(B)</div>
+            <video muted autoplay loop style="width: 90%">
+              <source src="videos/baseline/5b/bear-0.mp4" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+          </div>
+        </div>
+        <p style="font-size: 18px;">
+          <b>Text Prompt:</b> " <b>A majestic brown bear</b>, with its thick fur glistening in the dappled sunlight,
+          <b>begins its ascent up a towering pine tree in a dense forest</b>. The bear's powerful claws grip the rough
+          bark as it climbs higher, its muscles rippling with each movement"
+        </p>
+        <br>
+      </div>
+
+      <!-- Video grid for static view transport -->
+      <div class="video-grid" style="width: 90%; margin: 0 auto; grid-template-columns: repeat(2, 1fr);">
+        <!-- First row -->
+        <div class="video-item">
+          <div class="vid-des">(A)</div>
+          <video muted autoplay loop style="width: 90%">
+            <source src="videos/ours/5b/koala-1.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+        <div class="video-item">
+          <div class="vid-des">(B)</div>
+          <video muted autoplay loop style="width: 90%">
+            <source src="videos/baseline/5b/koala-0.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+      </div>
+      <p style="font-size: 18px;">
+        <b>Text Prompt:</b> <b>"In a magical forest bathed in dappled sunlight, a charming koala bear sits at a grand
+          piano, its furry paws gently pressing the keys. </b> <b>The koala, with its soft grey fur and expressive eyes,
+          wears a tiny bow tie, adding a whimsical touch.</b> Surrounding the piano, vibrant flowers and towering trees
+        create a lush, enchanting backdrop. As the koala plays, the melody seems to harmonize with the rustling leaves
+        and distant bird songs.
+        The scene captures a surreal blend of nature and music, with the koala's serene expression and the forest's
+        tranquil beauty creating a captivating, dreamlike atmosphere."
+      </p>
+      <br>
+      <!-- Second row -->
+      <div class="video-grid" style="width: 90%; margin: 0 auto; grid-template-columns: repeat(2, 1fr);">
+        <div class="video-item">
+          <div class="vid-des">(A)</div>
+          <video muted autoplay loop style="width: 90%">
+            <source src="videos/ours/5b/elephant-1.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+        <div class="video-item">
+          <div class="vid-des">(B)</div>
+          <video muted autoplay loop style="width: 90%">
+            <source src="videos/baseline/5b/elephant-0.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+      </div>
+      <p style="font-size: 18px;">
+        <b>Text Prompt:</b> <b>"A majestic elephant strolls gracefully through a lush, verdant forest, its massive feet
+          gently pressing into the soft earth. </b>The sunlight filters through the dense canopy, casting dappled
+        shadows on its wrinkled, grey skin. The elephant's trunk sways rhythmically, occasionally reaching out to touch
+        the vibrant foliage. Birds chirp melodiously in the background, adding to the serene ambiance. As it walks, the
+        elephant pauses to drink from a crystal-clear stream, its reflection shimmering in the water.
+        The scene captures the essence of tranquility and the natural beauty of the elephant's peaceful journey through
+        its habitat."
+      </p>
+      <br>
+
+      <!-- Third row -->
+      <div class="video-grid" style="width: 90%; margin: 0 auto; grid-template-columns: repeat(2, 1fr);">
+        <div class="video-item">
+          <div class="vid-des">(A)</div>
+          <video muted autoplay loop style="width: 90%">
+            <source src="videos/ours/5b/raccon-1.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+        <div class="video-item">
+          <div class="vid-des">(B)</div>
+          <video muted autoplay loop style="width: 90%">
+            <source src="videos/baseline/5b/raccon-0.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+      </div>
+      <p style="font-size: 18px;">
+        <b>Text Prompt:</b> <b>"In a whimsical forest clearing, a raccoon with a mischievous glint in its eye stands on
+          a tree stump, holding an electric guitar.</b> The raccoon, wearing a tiny leather jacket and sunglasses,
+        strums the guitar with surprising skill, its tiny paws moving deftly over the strings. The background features
+        tall, ancient trees with sunlight filtering through the leaves, casting a magical glow. As the raccoon plays,
+        woodland creatures gather around, entranced by the unexpected concert.
+        The scene captures the raccoon's rockstar moment, blending nature's tranquility with the electrifying energy of
+        its performance."
+      </p>
+      <br>
+      <!-- 4th row -->
+      <div class="video-grid" style="width: 90%; margin: 0 auto; grid-template-columns: repeat(2, 1fr);">
+        <div class="video-item">
+          <div class="vid-des">(A)</div>
+          <video muted autoplay loop style="width: 90%">
+            <source src="videos/ours/5b/robot-1.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+        <div class="video-item">
+          <div class="vid-des">(B)</div>
+          <video muted autoplay loop style="width: 90%">
+            <source src="videos/baseline/5b/robot-0.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+      </div>
+      <p style="font-size: 18px;">
+        <b>Text Prompt:</b> <b>"A sleek, metallic robot DJ with glowing blue eyes stands on a neon-lit rooftop in
+          futuristic Tokyo, surrounded by towering skyscrapers adorned with holographic advertisements. The night sky is
+          illuminated by vibrant,</b> pulsating lights, reflecting off the rain-soaked surfaces. The robot, with
+        intricate circuitry and mechanical arms, expertly manipulates the turntables, creating an electrifying mix.
+        Heavy rain pours down, adding a dramatic effect as the droplets sizzle on the robot's exterior. The scene is a
+        blend of sci-fi and fantasy, with the cityscape's cyberpunk aesthetic enhancing the surreal atmosphere. The
+        robot's movements are precise and rhythmic, embodying the fusion of technology and artistry in this captivating,
+        rain-drenched night."
+      </p>
+      <br>
+
+      <!-- 5th row -->
+      <div class="video-grid" style="width: 90%; margin: 0 auto; grid-template-columns: repeat(2, 1fr);">
+        <div class="video-item">
+          <div class="vid-des">(A)</div>
+          <video muted autoplay loop style="width: 90%">
+            <source src="videos/ours/5b/push-1.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+        <div class="video-item">
+          <div class="vid-des">(B)</div>
+          <video muted autoplay loop style="width: 90%">
+            <source src="videos/baseline/5b/push-0.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+      </div>
+      <p style="font-size: 18px;">
+        <b>Text Prompt:</b> <b>"A determined individual in a sleek black tank top and gray athletic shorts performs
+          push-ups on a pristine wooden floor in a minimalist, sunlit room.</b> The camera captures the sweat glistening
+        on their forehead, emphasizing their intense focus and dedication. As they lower themselves, the muscles in
+        their arms and back ripple with effort, showcasing their strength and endurance. The room's large windows allow
+        beams of natural light to highlight their form, casting dynamic shadows that accentuate each movement. The
+        serene ambiance of the space contrasts with the vigorous exercise, creating a powerful visual of discipline and
+        perseverance."
+      </p>
+      <br>
+
+      <!-- 6th row -->
+      <div class="video-grid" style="width: 90%; margin: 0 auto; grid-template-columns: repeat(2, 1fr);">
+        <div class="video-item">
+          <div class="vid-des">(A)</div>
+          <video muted autoplay loop style="width: 90%">
+            <source src="videos/ours/5b/zebra-1.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+        <div class="video-item">
+          <div class="vid-des">(B)</div>
+          <video muted autoplay loop style="width: 90%">
+            <source src="videos/baseline/5b/zebra-0.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+      </div>
+      <p style="font-size: 18px;">
+        <b>Text Prompt:</b> <b>"A lone zebra gallops across the vast African savannah, its black and white stripes a
+          striking contrast against the golden grasslands.</b> The sun casts a warm glow, highlighting the dust kicked
+        up by its hooves. In the distance, a herd of zebras grazes peacefully, their ears perking up at the sound of the
+        approaching runner. The lone zebra's muscles ripple with each powerful stride, its eyes focused and determined.
+        As it nears the herd, the zebras lift their heads in unison, welcoming the newcomer.
+        The scene captures the essence of unity and the wild beauty of the savannah, with the herd now complete under
+        the expansive, azure sky."
+      </p>
+      <br>
+
+      <br>
+    </div>
+    <br><br><br>
+
+
+
+    <!-- HunyangVideo -->
+    <div class="section" id="hunyang">
+      <div class="section-title">Comparison on HunyangVideo</div>
+      <p style="width: 70%; text-align: center; font-size: 18px; margin: 0 auto;">
+        For Comparison, we definitely use same prompts and model for video generation.
+      </p>
+      <br><br>
+
+      <!-- Firsrt row -->
+      <div class="video-grid" style="width: 90%; margin: 0 auto; grid-template-columns: repeat(2, 1fr);">
+        <div class="video-item">
+          <div class="vid-des">(A)</div>
+          <video muted autoplay loop style="width: 90%">
+            <source src="videos/ours/hunyang/horse-1.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+        <div class="video-item">
+          <div class="vid-des">(B)</div>
+          <video muted autoplay loop style="width: 90%">
+            <source src="videos/baseline/hunyang/horse-0.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+      </div>
+      <p style="font-size: 18px;">
+        <b>Text Prompt:</b> " <b>A majestic chestnut horse with a glossy coat</b> leisurely strolls through a
+        sun-dappled
+        meadow, its mane gently swaying in the breeze. <b>As it walks, the horse's hooves softly tread on the lush,
+          green
+          grass, creating a rhythmic</b>"
+      </p>
+      <br>
+
+
+      <!-- Second row -->
+      <div class="video-grid" style="width: 90%; margin: 0 auto; grid-template-columns: repeat(2, 1fr);">
+        <div class="video-item">
+          <div class="vid-des">(A)</div>
+          <video muted autoplay loop style="width: 90%">
+            <source src="videos/ours/hunyang/dunking-1.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+        <div class="video-item">
+          <div class="vid-des">(B)</div>
+          <video muted autoplay loop style="width: 90%">
+            <source src="videos/baseline/hunyang/dunking-0.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+      </div>
+      <p style="font-size: 18px;">
+        <b>Text Prompt:</b> " A dynamic athlete, soars through the air in a packed, electrifying arena. with sweat
+        glistening on their determined face, <b>grips the basketball tightly. As they approach the hoop, emphasizing
+          grace
+          of the jump</b>"
+      </p>
+
+      <!-- Second row -->
+      <div class="video-grid" style="width: 90%; margin: 0 auto; grid-template-columns: repeat(2, 1fr);">
+        <div class="video-item">
+          <div class="vid-des">(A)</div>
+          <video muted autoplay loop style="width: 90%">
+            <source src="videos/ours/hunyang/sheep-1.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+        <div class="video-item">
+          <div class="vid-des">(B)</div>
+          <video muted autoplay loop style="width: 90%">
+            <source src="videos/baseline/hunyang/sheep-0.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+      </div>
+      <p style="font-size: 18px;">
+        <b>Text Prompt:</b> " <b>A fluffy white sheep, </b>woolly coat leisurely strolls through a picturesque meadow,
+        dotted
+        with vibrant wildflowers and lush green grass. <b>The sheep's calm demeanor and slow, deliberate steps exude
+          tranquility as it meanders along a narrow dirt path</b>"
+      </p>
+
+      <!-- Second row -->
+      <div class="video-grid" style="width: 90%; margin: 0 auto; grid-template-columns: repeat(2, 1fr);">
+        <div class="video-item">
+          <div class="vid-des">(A)</div>
+          <video muted autoplay loop style="width: 90%">
+            <source src="videos/ours/hunyang/crying-1.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+        <div class="video-item">
+          <div class="vid-des">(B)</div>
+          <video muted autoplay loop style="width: 90%">
+            <source src="videos/baseline/hunyang/crying-0.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+      </div>
+      <p style="font-size: 18px;">
+        <b>Text Prompt:</b> " <b>A young woman with long, dark hair/b> sits alone in a dimly lit room, her face
+          illuminated by
+          the soft glow of a nearby lamp.<b> Tears stream down her cheeks, ….The camera captures her quivering lips and
+            the
+            silent sobs that shake her shoulders.</b> "
+      </p>
+
+
+      <!-- Second row -->
+      <div class="video-grid" style="width: 90%; margin: 0 auto; grid-template-columns: repeat(2, 1fr);">
+        <div class="video-item">
+          <div class="vid-des">(A)</div>
+          <video muted autoplay loop style="width: 90%">
+            <source src="videos/compare_3/airplane-0.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+        <div class="video-item">
+          <div class="vid-des">(B)</div>
+          <video muted autoplay loop style="width: 90%">
+            <source src="videos/compare_3/airplane-2.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+      </div>
+      <p style="font-size: 18px;">
+        <b>Text Prompt:</b> " <b>A young woman with long, dark hair/b> sits alone in a dimly lit room, her face
+          illuminated by
+          the soft glow of a nearby lamp.<b> Tears stream down her cheeks, ….The camera captures her quivering lips and
+            the
+            silent sobs that shake her shoulders.</b> "
+      </p>
+
+      <br>
+    </div>
+    <br><br><br>
+
+
+    <!-- Wan2.1 -->
+    <div class="section" id="wan">
+      <div class="section-title">Comparison on Wan2.1-1.3B</div>
+      <p style="width: 70%; text-align: center; font-size: 18px; margin: 0 auto;">
+        For Comparison, we definitely use same prompts and model for video generation.
+      </p>
+      <br><br>
+
+      <!-- Firsrt row -->
+      <div class="video-grid" style="width: 90%; margin: 0 auto; grid-template-columns: repeat(2, 1fr);">
+        <div class="video-item">
+          <div class="vid-des">(A)</div>
+          <video muted autoplay loop style="width: 90%">
+            <source src="videos/ours/wan/beer-1.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+        <div class="video-item">
+          <div class="vid-des">(B)</div>
+          <video muted autoplay loop style="width: 90%">
+            <source src="videos/baseline/wan/beer-0.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+      </div>
+      <p style="font-size: 18px;">
+        <b>Text Prompt:</b> " A bearded man in his thirties, wearing a plaid shirt and jeans, sits at a rustic wooden
+        bar, surrounded by an array of beer taps and vintage brewery decor. <b>He carefully lifts a frosty pint glass
+          filled with amber beer</b>"
+      </p>
+      <br>
+
+
+      <!-- Second row -->
+      <div class="video-grid" style="width: 90%; margin: 0 auto; grid-template-columns: repeat(2, 1fr);">
+        <div class="video-item">
+          <div class="vid-des">(A)</div>
+          <video muted autoplay loop style="width: 90%">
+            <source src="videos/ours/wan/mars-1.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+        <div class="video-item">
+          <div class="vid-des">(B)</div>
+          <video muted autoplay loop style="width: 90%">
+            <source src="videos/baseline/wan/mars-0.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+      </div>
+      <p style="font-size: 18px;">
+        <b>Text Prompt:</b> "A colossal, <b>hyper-realistic spaceship descends gracefully onto the rugged Martian
+          surface, its sleek metallic
+          hull reflecting the crimson hues of the planet.</b>
+        Dust and small rocks scatter as the landing thrusters engage, creating a dramatic cloud"
+      </p>
+
+      <!-- Second row -->
+      <div class="video-grid" style="width: 90%; margin: 0 auto; grid-template-columns: repeat(2, 1fr);">
+        <div class="video-item">
+          <div class="vid-des">(A)</div>
+          <video muted autoplay loop style="width: 90%">
+            <source src="videos/ours/wan/icecream-1.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+        <div class="video-item">
+          <div class="vid-des">(B)</div>
+          <video muted autoplay loop style="width: 90%">
+            <source src="videos/baseline/wan/icecream-0.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+      </div>
+      <p style="font-size: 18px;">
+        <b>Text Prompt:</b> " A vibrant, <b>multi-colored ice cream cone sits on a rustic wooden table, its creamy
+          swirls
+          beginning to soften under the warm sunlight streaming through a nearby window.</b> The camera zooms in to
+        capture
+        the intricate details of the melting ice cream"
+      </p>
+
+      <!-- Second row -->
+      <div class="video-grid" style="width: 90%; margin: 0 auto; grid-template-columns: repeat(2, 1fr);">
+        <div class="video-item">
+          <div class="vid-des">(A)</div>
+          <video muted autoplay loop style="width: 90%">
+            <source src="videos/ours/wan/clownfish-1.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+        <div class="video-item">
+          <div class="vid-des">(B)</div>
+          <video muted autoplay loop style="width: 90%">
+            <source src="videos/baseline/wan/clownfish-0.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+      </div>
+      <p style="font-size: 18px;">
+        <b>Text Prompt:</b> "<b>A vibrant clownfish, with its striking orange and white stripes, gracefully navigates
+          through a lush coral reef teeming with life.</b> The fish weaves between the intricate branches of colorful
+        corals, which range from deep purples to bright yellows"
+      </p>
+
+      <!-- Second row -->
+      <div class="video-grid" style="width: 90%; margin: 0 auto; grid-template-columns: repeat(2, 1fr);">
+        <div class="video-item">
+          <div class="vid-des">(A)</div>
+          <video muted autoplay loop style="width: 90%">
+            <source src="videos/compare_3/giraffe-0.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+        <div class="video-item">
+          <div class="vid-des">(B)</div>
+          <video muted autoplay loop style="width: 90%">
+            <source src="videos/compare_3/giraffe-2.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+      </div>
+      <p style="font-size: 18px;">
+        <b>Text Prompt:</b> <b>"A majestic giraffe, its long neck gracefully arching, bends down to drink from a
+          serene river, surrounded by lush greenery and tall grasses. </b>The sun casts a golden glow, highlighting
+        the giraffe's patterned coat and the gentle ripples in the water. Nearby, a family of zebras grazes
+        peacefully, adding to the tranquil scene. Birds flutter above, their reflections dancing on the water's
+        surface. The giraffe's delicate movements create a sense of harmony with nature, as the river flows gently,
+        reflecting the vibrant colors of the surrounding landscape."
+      </p>
+
+      <br>
+    </div>
+    <br><br><br>
+
+  </div>
+
+  <script>
+    // Global flag to track playing state for Enter key toggle
+    let videosPlaying = true;
+
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Enter") {
+        const videos = document.querySelectorAll("video");
+        if (videosPlaying) {
+          videos.forEach(video => video.pause());
+          videosPlaying = false;
+        } else {
+          videos.forEach(video => video.play());
+          videosPlaying = true;
+        }
+      }
+    });
+
+    // Synchronize videos within each video-grid: reset and start them simultaneously
+    function synchronizeVideoGrids() {
+      const grids = document.querySelectorAll('.video-grid');
+      grids.forEach(grid => {
+        const videos = grid.querySelectorAll('video');
+        videos.forEach(video => {
+          video.pause();
+          video.currentTime = 0;
+        });
+        // Use a slight delay to ensure the reset takes effect before playing
+        setTimeout(() => {
+          videos.forEach(video => video.play());
+        }, 100);
+      });
+    }
+
+    // Call synchronization function when the window loads
+    window.addEventListener("load", () => {
+      synchronizeVideoGrids();
+    });
+  </script>
+</body>
+
+</html>
